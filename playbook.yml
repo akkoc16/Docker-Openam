@@ -1,0 +1,43 @@
+---
+- hosts: dev
+  become: yes
+
+  tasks:
+  - name: Install and enable epel-repos
+    yum: name=epel-release state=present
+
+  - name: Install the basic packages and tools
+    yum:
+      name:  "{{ packages }}"
+    vars:  
+      packages:
+        - vim
+        - bash-completion
+        - bash-completion-extras
+        - tmux
+        - wget
+        - unzip
+        - zip
+          #- xz
+        - net-tools
+          #- deltarpm
+        - nmap-ncat
+        - htop
+          #- python-pip
+        - lsof
+        - docker
+        - podman
+        - tree
+        - curl
+      state: present
+
+  - name: Set Timezone Europe/Istanbul 
+    shell: timedatectl set-timezone Europe/Istanbul
+  - name: install ntp package
+    yum: name=ntp state=latest
+    
+  - name: Enable and restart ntpd service
+    service: name=ntpd state=restarted enabled=yes
+  - name: Enable and start Docker.service
+    service: name=docker state=restarted enabled=yes
+    # deploy ara and configure host and port for ara web server

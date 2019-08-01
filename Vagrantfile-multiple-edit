@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "centos/7"
+  config.vm.hostname = "deployman.dev"
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+  config.vm.network "private_network", ip: "192.168.100.10"
+  # config.vm.network "public_network", use_dhcp_assigned_default_route: true
+  #config.vm.synced_folder ".", "/vagrant_data"
+  config.vm.synced_folder ".", "/vagrantfiles", type: "rsync",
+  rsync__exclude: ".git/"
+   
+  config.vm.provider "virtualbox" do |vb|
+  vb.memory = 1024
+  vb.cpus = 1
+  vb.name = "Deployman TestVm"
+
+
+### multiple nodes
+config.vm.define "node1" do |machine|
+  machine.vm.network "private_network", ip: "172.17.177.21"
+end
+
+config.vm.define "node2" do |machine|
+  machine.vm.network "private_network", ip: "172.17.177.22"
+end
+
+config.vm.define 'controller' do |machine|
+  machine.vm.network "private_network", ip: "172.17.177.11"
+end
+### multiple nodes end
+
+#  config.vm.provision "shell", inline: <<-SHELL
+  #yum update -y
+#SHELL
+# Run Ansible from the Vagrant VM
+     config.vm.provision "ansible_local" do |ansible|
+     ansible.playbook = "playbook.yml"
+     ansible.inventory_path = "inventory"
+     ansible.verbose = true
+     ansible.limit= "all"
+     end
+end
+end
